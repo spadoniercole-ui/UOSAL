@@ -4,7 +4,7 @@ from supabase import create_client, Client
 # Le credenziali dirette del tuo progetto Supabase
 SUPABASE_URL = "https://cjfkqhwoxbjeznarvazm.supabase.co"
 # Inserirai la tua chiave anon o service_role che trovi nelle impostazioni API di Supabase
-SUPABASE_KEY = "INSERISCI_QUI_LA_TUA_API_KEY"
+SUPABASE_KEY = "sb_publishable_pZ3MqT04XNr6C78tHfCBBg_mVp5wfgS"
 
 def test_supabase_http():
     try:
