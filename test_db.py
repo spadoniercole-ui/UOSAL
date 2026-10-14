@@ -11,11 +11,11 @@ DATABASE = os.getenv("MYSQLDATABASE", "railway")
 def test_connection():
     try:
         connection = pymysql.connect(
-            host=HOST,
-            port=PORT,
-            user=USER,
-            password=PASSWORD,
-            database=DATABASE,
+            host=mysql.railway.internal,
+            port=3306,
+            user=root,
+            password=nEVTHKFiCxqaNRqQuvNHXQOikjqXsotB,
+            database=railway,
             cursorclass=pymysql.cursors.DictCursor
         )
         print("Connessione a MySQL su Railway riuscita con successo! 🚀")
