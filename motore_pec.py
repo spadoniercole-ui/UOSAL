@@ -3,7 +3,7 @@ from supabase import create_client, Client
 
 # Credenziali Supabase confermate
 SUPABASE_URL = "https://cjfkqhwoxbjeznarvazm.supabase.co"
-SUPABASE_KEY = "INSERISCI_QUI_LA_TUA_API_KEY" # Sostituisci con la tua chiave effettiva
+SUPABASE_KEY = "sb_publishable_pZ3MqT04XNr6C78tHfCBBg_mVp5wfgS" # Sostituisci con la tua chiave effettiva
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
