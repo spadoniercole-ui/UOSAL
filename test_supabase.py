@@ -1,34 +1,25 @@
-import psycopg2
+import os
+from supabase import create_client, Client
 
-def test_supabase_connection():
+# Le credenziali dirette del tuo progetto Supabase
+SUPABASE_URL = "https://cjfkqhwoxbjeznarvazm.supabase.co"
+# Inserirai la tua chiave anon o service_role che trovi nelle impostazioni API di Supabase
+SUPABASE_KEY = "INSERISCI_QUI_LA_TUA_API_KEY"
+
+def test_supabase_http():
     try:
-        # Connessione sicura tramite parametri individuali (nessun conflitto con caratteri speciali)
-        connection = psycopg2.connect(
-            host="db.cjfkqhwoxbjeznarvazm.supabase.co",
-            database="postgres",
-            user="postgres",
-            password="Mges/0905!1",
-            port=5432
-        )
-        print("Connessione a Supabase (PostgreSQL) riuscita con successo! 🚀")
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("Connessione via HTTP/REST a Supabase avviata con successo! 🚀")
         
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT version();")
-            db_version = cursor.fetchone()
-            print(f"\nVersione Database: {db_version[0]}")
-            
-            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
-            tabelle = cursor.fetchall()
-            
-            print("\nTabelle presenti nel database:")
-            for t in tabelle:
-                print(f" - {t[0]}")
+        # Facciamo una query di test sulla tabella parametri_sistema che abbiamo creato
+        response = supabase.table("parametri_sistema").select("*").execute()
+        
+        print("\nParametri letti con successo dal database:")
+        for row in response.data:
+            print(f" - [{row['chiave']}] => {row['valore']}")
                 
     except Exception as e:
-        print(f"Errore di connessione a Supabase: {e}")
-    finally:
-        if 'connection' in locals() and connection.closed == 0:
-            connection.close()
+        print(f"Errore di comunicazione con Supabase: {e}")
 
 if __name__ == "__main__":
-    test_supabase_connection()
+    test_supabase_http()
