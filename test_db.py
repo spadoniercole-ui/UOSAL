@@ -1,9 +1,8 @@
-import os
 import pymysql
 
-# Coordinate di Railway fornite
-HOST = "viaduct.proxy.rlwy.net"  # Inserisci qui l'host pubblico di Railway
-PORT = 12345                     # Inserisci qui la porta a 5 cifre del proxy
+# SOSTITUISCI QUESTI DUE VALORI CON QUELLI DEL TCP PROXY DI RAILWAY:
+HOST = "viaduct.proxy.rlwy.net"  # Metti qui il tuo host pubblico di Railway
+PORT = 12345                     # Metti qui la porta a 5 cifre del proxy
 
 USER = "root"
 PASSWORD = "nEVTHKFiCxqaNRqQuvNHXQOikjqXsotB"
@@ -12,17 +11,16 @@ DATABASE = "railway"
 def test_connection():
     try:
         connection = pymysql.connect(
-            host=mysql.railway.internal,
-            port=3306,
-            user=root,
-            password=nEVTHKFiCxqaNRqQuvNHXQOikjqXsotB,
-            database=railway,
+            host=HOST,
+            port=PORT,
+            user=USER,
+            password=PASSWORD,
+            database=DATABASE,
             cursorclass=pymysql.cursors.DictCursor
         )
         print("Connessione a MySQL su Railway riuscita con successo! 🚀")
         
         with connection.cursor() as cursor:
-            # Test di lettura dei parametri di sistema
             cursor.execute("SELECT chiave, valore, descrizione FROM parametri_sistema;")
             parametri = cursor.fetchall()
             
