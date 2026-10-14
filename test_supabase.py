@@ -1,9 +1,15 @@
 import psycopg2
-DATABASE_URL = 'postgresql://postgres:Mges/0905%211@db.cjfkqhwoxbjeznarvazm.supabase.co:5432/postgres'
 
 def test_supabase_connection():
     try:
-        connection = psycopg2.connect(DATABASE_URL)
+        # Connessione sicura tramite parametri individuali (nessun conflitto con caratteri speciali)
+        connection = psycopg2.connect(
+            host="db.cjfkqhwoxbjeznarvazm.supabase.co",
+            database="postgres",
+            user="postgres",
+            password="Mges/0905!1",
+            port=5432
+        )
         print("Connessione a Supabase (PostgreSQL) riuscita con successo! 🚀")
         
         with connection.cursor() as cursor:
