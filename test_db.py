@@ -2,11 +2,12 @@ import os
 import pymysql
 
 # Coordinate di Railway fornite
-HOST = os.getenv("MYSQLHOST", "mysql.railway.internal")
-PORT = int(os.getenv("MYSQLPORT", 3306))
-USER = os.getenv("MYSQLUSER", "root")
-PASSWORD = os.getenv("MYSQLPASSWORD", "nEVTHKFiCxqaNRqQuvNHXQOikjqXsotB")
-DATABASE = os.getenv("MYSQLDATABASE", "railway")
+HOST = "viaduct.proxy.rlwy.net"  # Inserisci qui l'host pubblico di Railway
+PORT = 12345                     # Inserisci qui la porta a 5 cifre del proxy
+
+USER = "root"
+PASSWORD = "nEVTHKFiCxqaNRqQuvNHXQOikjqXsotB"
+DATABASE = "railway"
 
 def test_connection():
     try:
