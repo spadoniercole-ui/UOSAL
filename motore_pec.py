@@ -1,7 +1,8 @@
+cat << 'EOF' > motore_pec.py
 import re
 from supabase import create_client, Client
 
-# Credenziali Supabase e chiave memorizzata
+# Credenziali Supabase con la chiave salvata
 SUPABASE_URL = "https://cjfkqhwoxbjeznarvazm.supabase.co"
 SUPABASE_KEY = "sb_publishable_pZ3MqT04XNr6C78tHfCBBg_mVp5wfgS"
 
@@ -17,7 +18,7 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
     print(f"\n--- Analisi nuova PEC da: {mittente} ---")
     print(f"Oggetto: {oggetto}")
     
-    # 1. Recuperiamo l'ID dell'utente responsabile basato sullo username standard
+    # 1. Recuperiamo l'ID dell'utente responsabile basato sullo username corretto
     user_res = supabase.table("utenti").select("id, sede_id, username").eq("username", username_operatore).execute()
     if not user_res.data:
         print(f"⚠️ Attenzione: Utente '{username_operatore}' non trovato nel database.")
@@ -26,6 +27,7 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
     operatore = user_res.data[0]
     sede_id_operatore = operatore["sede_id"]
     utente_id = operatore["id"]
+    print(f"👤 Operatore identificato: @{operatore['username']} (Sede ID: {sede_id_operatore})")
     
     # 2. Carichiamo i parametri dinamici dal database
     parametri = carica_parametri()
@@ -67,7 +69,6 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
         else:
             print(f"⚠️ Rilevato RG {num_ruolo}/{anno}: Il fascicolo non esiste. Creazione automatica in corso...")
             
-            # Creiamo il nuovo fascicolo agganciandolo alla sede dell'operatore e all'utente responsabile
             nuovo_fascicolo = {
                 "numero_ruolo": num_ruolo,
                 "anno": int(anno),
@@ -83,13 +84,12 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
                 nuovo_id = ins_res.data[0]["id"]
                 print(f"📁 Fascicolo RG {num_ruolo}/{anno} creato con successo (ID: {nuovo_id}) associato all'utente @{username_operatore}!")
                 
-                # Salviamo la PEC collegandola al nuovo fascicolo appena creato
                 salva_pec_su_db(
                     fascicolo_id=nuovo_id,
                     mittente=mittente,
                     oggetto=oggetto,
                     corpo=corpo,
-                    stato="associato_ automatico",
+                    stato="associato_automatico",
                     confidenza=100,
                     motivo="Creazione automatica fascicolo da PEC"
                 )
@@ -120,7 +120,7 @@ def salva_pec_su_db(fascicolo_id, mittente, oggetto, corpo, stato, confidenza, m
     print("💾 Dati PEC salvati correttamente nel database cloud.")
 
 if __name__ == "__main__":
-    # Test di simulazione con una PEC che cita un fascicolo NUOVO (per testare la creazione automatica)
+    # Test di simulazione con un fascicolo che testerà la creazione automatica
     analizza_e_smista_pec(
         mittente="cancelleria.tribunale@pec.it",
         oggetto="Atto di Citazione - R.G. 9988/2026 - INPS c/ Controparte",
