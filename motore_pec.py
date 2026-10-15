@@ -12,7 +12,7 @@ def carica_parametri():
     response = supabase.table("parametri_sistema").select("chiave, valore").execute()
     return {row["chiave"]: row["valore"] for row in response.data}
 
-def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_operatore: str = "e.spadone"):
+def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_operatore: str = "e.spadoni"):
     """Motore logico per il parsing, il matching della PEC e l'associazione anagrafica"""
     print(f"\n--- Analisi nuova PEC da: {mittente} ---")
     print(f"Oggetto: {oggetto}")
