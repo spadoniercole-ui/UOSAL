@@ -125,5 +125,5 @@ if __name__ == "__main__":
         mittente="cancelleria.tribunale@pec.it",
         oggetto="Atto di Citazione - R.G. 9988/2026 - INPS c/ Controparte",
         corpo="Si notifica l'atto di citazione relativo al procedimento RG 9988 del 2026.",
-        username_operatore="e.spadone"
+        username_operatore="e.spadoni"
     )
