@@ -1,23 +1,20 @@
 import re
 from supabase import create_client, Client
 
-# Credenziali Supabase con la chiave salvata
 SUPABASE_URL = "https://cjfkqhwoxbjeznarvazm.supabase.co"
 SUPABASE_KEY = "sb_publishable_pZ3MqT04XNr6C78tHfCBBg_mVp5wfgS"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def carica_parametri():
-    """Carica le configurazioni e le regex direttamente dalla tabella parametrica su Supabase"""
     response = supabase.table("parametri_sistema").select("chiave, valore").execute()
     return {row["chiave"]: row["valore"] for row in response.data}
 
 def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_operatore: str = "e.spadoni"):
-    """Motore logico per il parsing, il matching della PEC e l'associazione anagrafica"""
     print(f"\n--- Analisi nuova PEC da: {mittente} ---")
     print(f"Oggetto: {oggetto}")
     
-    # 1. Recuperiamo l'ID dell'utente responsabile basato sullo username corretto
+    # 1. Recuperiamo l'ID dell'utente responsabile
     user_res = supabase.table("utenti").select("id, sede_id, username").eq("username", username_operatore).execute()
     if not user_res.data:
         print(f"⚠️ Attenzione: Utente '{username_operatore}' non trovato nel database.")
@@ -28,14 +25,10 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
     utente_id = operatore["id"]
     print(f"👤 Operatore identificato: @{operatore['username']} (Sede ID: {sede_id_operatore})")
     
-    # 2. Carichiamo i parametri dinamici dal database
+    # 2. Carichiamo i parametri dinamici
     parametri = carica_parametri()
     soglia_auto = int(parametri.get("soglia_match_automatico", 85))
-    regex_pattern = parametri.get("regex_ruolo_principale", r'/(?:R\.?G\.?|RG|RUOLO)\s*(?:N\.?|NUM\.?\s*)?(\d{1,6})[\/\-](\d{2,4})/ui')
-    
-    clean_pattern = regex_pattern.strip('/')
-    if clean_pattern.endswith('/ui'):
-        clean_pattern = clean_pattern[:-3]
+    clean_pattern = parametri.get("regex_ruolo_principale", r'R\.?G\.?\s*(\d{1,6})[\/\-](\d{2,4})')
 
     # 3. Testiamo l'estrazione del numero di ruolo
     testo_da_scansionare = f"{oggetto} {corpo}"
@@ -63,7 +56,7 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
                 corpo=corpo,
                 stato=stato_elab,
                 confidenza=confidenza,
-                motivo=f"Match esatto RG {num_ruolo}/{anno} da oggetto/testo"
+                motivo=f"Match esatto RG {num_ruolo}/{anno}"
             )
         else:
             print(f"⚠️ Rilevato RG {num_ruolo}/{anno}: Il fascicolo non esiste. Creazione automatica in corso...")
@@ -81,7 +74,7 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
             ins_res = supabase.table("fascicoli").insert(nuovo_fascicolo).execute()
             if ins_res.data:
                 nuovo_id = ins_res.data[0]["id"]
-                print(f"📁 Fascicolo RG {num_ruolo}/{anno} creato con successo (ID: {nuovo_id}) associato all'utente @{username_operatore}!")
+                print(f"📁 Fascicolo RG {num_ruolo}/{anno} creato con successo (ID: {nuovo_id}) e associato a @{username_operatore}!")
                 
                 salva_pec_su_db(
                     fascicolo_id=nuovo_id,
@@ -105,7 +98,6 @@ def analizza_e_smista_pec(mittente: str, oggetto: str, corpo: str, username_oper
         )
 
 def salva_pec_su_db(fascicolo_id, mittente, oggetto, corpo, stato, confidenza, motivo):
-    """Salva l'esito della comunicazione PEC nella tabella comunicazioni_pec di Supabase"""
     data = {
         "fascicolo_id": fascicolo_id,
         "mittente": mittente,
@@ -119,7 +111,6 @@ def salva_pec_su_db(fascicolo_id, mittente, oggetto, corpo, stato, confidenza, m
     print("💾 Dati PEC salvati correttamente nel database cloud.")
 
 if __name__ == "__main__":
-    # Test di simulazione con un fascicolo che testerà la creazione automatica
     analizza_e_smista_pec(
         mittente="cancelleria.tribunale@pec.it",
         oggetto="Atto di Citazione - R.G. 9988/2026 - INPS c/ Controparte",
