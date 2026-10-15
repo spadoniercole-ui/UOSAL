@@ -1,4 +1,3 @@
-cat << 'EOF' > motore_pec.py
 import re
 from supabase import create_client, Client
 
