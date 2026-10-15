@@ -127,3 +127,4 @@ if __name__ == "__main__":
         corpo="Si notifica l'atto di citazione relativo al procedimento RG 9988 del 2026.",
         username_operatore="e.spadoni"
     )
+    
