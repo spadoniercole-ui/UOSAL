@@ -1,4 +1,11 @@
-name: Esegui PEC Intake ogni 2 ore
+name: Esegui lo script
+  env:
+    SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    PEC_USER: ${{ secrets.PEC_USER }}
+    PEC_PASSWORD: ${{ secrets.PEC_PASSWORD }}
+    PEC_IMAP_SERVER: ${{ secrets.PEC_IMAP_SERVER }}
+  run: python pec_intake.py
 
 on:
   schedule:
