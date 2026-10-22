@@ -37,6 +37,21 @@ import sys
 import unicodedata
 import zipfile
 import email
+import os
+from supabase import create_client, Client
+
+# Lettura delle variabili d'ambiente
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+PEC_USER = os.environ.get("PEC_USER")
+PEC_PASSWORD = os.environ.get("PEC_PASSWORD")
+PEC_IMAP_SERVER = os.environ.get("PEC_IMAP_SERVER")
+
+# Esempio di inizializzazione
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("Mancano le credenziali di Supabase!")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 from base64 import b64encode
 from datetime import date, datetime, timedelta
 from email import policy
