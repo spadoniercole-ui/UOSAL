@@ -31,4 +31,4 @@ jobs:
           PEC_USER: ${{ secrets.PEC_USER }}
           PEC_PASSWORD: ${{ secrets.PEC_PASSWORD }}
           PEC_IMAP_SERVER: ${{ secrets.PEC_IMAP_SERVER }}
-        run: python pec_intake.py
+        run: python pec_intake.py --dal 2026-09-01
