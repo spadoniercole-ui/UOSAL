@@ -1,11 +1,9 @@
 {
+ "_nota": "CRITERI di selezione e classificazione. I PERCORSI di questa installazione stanno in percorsi.json, che non viene mai sovrascritto: cosi' un aggiornamento dei criteri non cancella la configurazione locale.",
+ "cartelle": [
   "archivio_fascicoli": "./archivio_fascicoli",
   "indice_cartelle": "./indice_cartelle.json",
   "base_json": "./base.json"
-}
-{
- "_nota": "CRITERI di selezione e classificazione. I PERCORSI di questa installazione stanno in percorsi.json, che non viene mai sovrascritto: cosi' un aggiornamento dei criteri non cancella la configurazione locale.",
- "cartelle": [
   "UOSAL",
   "AVVOCATI",
   "AVVOCATI ESTERNI",
