@@ -3,6 +3,8 @@ import email
 import os
 from email.header import decode_header
 import re
+from datetime import datetime
+from email.utils import parsedate_to_datetime
 
 class Dispatch:
     def __init__(self, prog_id):
@@ -28,14 +30,16 @@ class Namespace:
         user = os.environ.get("PEC_USER", "")
         pwd = os.environ.get("PEC_PASSWORD", "")
         
-        self.imap = imaplib.IMAP4_SSL(server)
-        self.imap.login(user, pwd)
+        try:
+            self.imap = imaplib.IMAP4_SSL(server)
+            self.imap.login(user, pwd)
+        except Exception as e:
+            print(f"ERRORE CONNESSIONE IMAP: {e}")
+            raise e
+            
         self.Folders = FolderCollection(self.imap)
-        self._default_folder = None
 
     def GetDefaultFolder(self, num):
-        if num == 6: # Posta in arrivo
-            return Folder("INBOX", self.imap)
         return Folder("INBOX", self.imap)
 
     def Logon(self, *args, **kwargs): pass
@@ -47,7 +51,8 @@ class FolderCollection:
         self.folders = []
         if typ == 'OK':
             for line in data:
-                match = re.search(r'"(.*)"$', line.decode('utf-8'))
+                # Estrae il nome della cartella, gestendo le virgolette
+                match = re.search(r'"([^"]*)"$', line.decode('utf-8'))
                 if match:
                     self.folders.append(match.group(1))
         self.Count = len(self.folders)
@@ -65,7 +70,6 @@ class Folder:
         self.FolderPath = name
         self.imap = imap
         self.Items = Items(name, imap)
-        self.Folders = FolderCollection(imap) # Semplificato
 
 class Items:
     def __init__(self, folder_name, imap):
@@ -81,16 +85,16 @@ class Items:
             typ, data = self.imap.search(None, 'ALL')
             if typ == 'OK':
                 self.message_ids = data[0].split()
-        except Exception as e:
+        except Exception:
             pass
 
     def Restrict(self, filter_str):
-        # Estrae la data dal filtro di Outlook (es. "01/09/2026")
-        match = re.search(r"'(\d{2})/(\d{2})/(\d{4})'", filter_str)
+        match = re.search(r"'(\d{1,2})/(\d{1,2})/(\d{4})'", filter_str)
         if match:
             d, m, y = match.groups()
+            # Formatta gg-mmm-aaaa per IMAP
             mesi = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-            data_imap = f"{d}-{mesi[int(m)-1]}-{y}"
+            data_imap = f"{int(d):02d}-{mesi[int(m)-1]}-{y}"
             try:
                 self.imap.select(f'"{self.folder_name}"', readonly=True)
                 typ, data = self.imap.search(None, f'SINCE {data_imap}')
@@ -102,8 +106,7 @@ class Items:
         return self
 
     def Sort(self, *args, **kwargs):
-        # IMAP restituisce già i messaggi in ordine cronologico
-        pass
+        pass # IMAP restituisce già ordinato per data
 
     def GetFirst(self):
         self.current_idx = 0
@@ -120,7 +123,8 @@ class Items:
             typ, data = self.imap.fetch(msg_id, '(RFC822)')
             if typ == 'OK' and data[0] is not None:
                 return Message(data[0][1])
-        except Exception:
+        except Exception as e:
+            print(f"Errore fetch: {e}")
             pass
         return None
 
@@ -132,9 +136,15 @@ class Message:
         self.msg = email.message_from_bytes(raw)
         self.Subject = self._decode(self.msg.get('Subject', ''))
         self.SenderName = self._decode(self.msg.get('From', ''))
-        self.ReceivedTime = self.msg.get('Date', '')
         self.To = self._decode(self.msg.get('To', ''))
         
+        # Gestione della data
+        date_str = self.msg.get('Date', '')
+        try:
+            self.ReceivedTime = parsedate_to_datetime(date_str)
+        except:
+            self.ReceivedTime = datetime.now()
+            
         self.Body = ""
         self.Attachments = AttachmentCollection()
         self._parse()
@@ -142,7 +152,7 @@ class Message:
     def _decode(self, header):
         if not header: return ""
         decoded = decode_header(header)
-        return "".join([t[0].decode(t[1] or 'utf-8') if isinstance(t[0], bytes) else t[0] for t in decoded])
+        return "".join([t[0].decode(t[1] or 'utf-8', errors='ignore') if isinstance(t[0], bytes) else t[0] for t in decoded])
 
     def _parse(self):
         for part in self.msg.walk():
