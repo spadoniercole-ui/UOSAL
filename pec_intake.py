@@ -2054,11 +2054,11 @@ def collega_outlook():
       - in modalita' non memorizzata serve la rete verso Exchange, perche'
         i messaggi non sono sul disco.
     """
-    try:
-        import win32com.client
-    except Exception as e:
-        err(f"win32com non disponibile: {e}")
-        return None
+    # try:
+    #    import win32com.client
+    # except Exception as e:
+    #  err(f"win32com non disponibile: {e}")
+    #  return None
 
     # era gia' aperto? GetActiveObject fallisce se non c'e' nessuna istanza
     gia_aperto = True
