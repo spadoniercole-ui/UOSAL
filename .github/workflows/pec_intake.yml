@@ -1,4 +1,4 @@
-name: Esegui PEC Intake
+name: Esegui PEC Intake Cloud
 
 on:
   schedule:
@@ -24,24 +24,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Prepara ambiente (finti moduli e file di base)
-        run: |
-          # 1. Creiamo il finto modulo win32com per farlo digerire a Linux
-          mkdir -p win32com
-          touch win32com/__init__.py
-          echo "class Dispatch:" > win32com/client.py
-          echo "    def __init__(self, *args, **kwargs): pass" >> win32com/client.py
-          echo "    def __getattr__(self, name): return self" >> win32com/client.py
-          echo "    def __call__(self, *args, **kwargs): return self" >> win32com/client.py
-          
-          # 2. Creiamo un base.json valido per non farlo crashare
-          echo '{"fascicoli": {}, "eventi": [], "udienze": []}' > base.json
-
-      - name: Esegui lo script
+      - name: Esegui lo script tramite adattatore Cloud
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PEC_USER: ${{ secrets.PEC_USER }}
           PEC_PASSWORD: ${{ secrets.PEC_PASSWORD }}
           PEC_IMAP_SERVER: ${{ secrets.PEC_IMAP_SERVER }}
-        run: python pec_intake.py --dal 2026-09-01
+        run: python run_cloud.py --dal 2026-09-01
