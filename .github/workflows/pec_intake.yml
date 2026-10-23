@@ -24,6 +24,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Prepara ambiente (finti moduli e file di base)
+        run: |
+          # 1. Creiamo il finto modulo win32com per farlo digerire a Linux
+          mkdir -p win32com
+          touch win32com/__init__.py
+          echo "class Dispatch:" > win32com/client.py
+          echo "    def __init__(self, *args, **kwargs): pass" >> win32com/client.py
+          echo "    def __getattr__(self, name): return self" >> win32com/client.py
+          echo "    def __call__(self, *args, **kwargs): return self" >> win32com/client.py
+          
+          # 2. Creiamo un base.json valido per non farlo crashare
+          echo '{"fascicoli": {}, "eventi": [], "udienze": []}' > base.json
+
       - name: Esegui lo script
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
